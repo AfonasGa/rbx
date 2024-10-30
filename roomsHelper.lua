@@ -15,7 +15,8 @@ if infstamina then
         Button1 = "OK"; 
     })
     print("Infinite stamina enabled")
-game.Players.LocalPlayer.PlayerGui.stamina.LocalScript.energy.Value = inf
+game.Players.LocalPlayer.PlayerGui.stamina.LocalScript.energy.Value = 9999999999
+game.Players.LocalPlayer.PlayerGui.stamina.Enabled = false
 else
  print("Infinite stamina disabled")
 end
