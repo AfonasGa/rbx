@@ -38,8 +38,8 @@ warn.Text = "Universal"
 wait(0.2)
 warn.Text = " "
 wait(0.2)
-warn.Text = "Loading script..."
-wait(0.2)
+warn.Text = "Press Shift+P!"
+wait(1)
 warn:Destroy()
 --Roblox--
 local pi    = math.pi
