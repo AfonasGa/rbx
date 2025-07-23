@@ -1,76 +1,77 @@
-local loadScript = loadstring(game:HttpGet("https://afonasga.github.io/rbx/DaHood/SAF.lua"))()
+local Player = game:GetService("Players").LocalPlayer
+local TeleportService = game:GetService("TeleportService")
+local RunService = game:GetService("RunService")
 
--- Оптимизированный скрипт для Da Hood с авторестартом
-local player = game:GetService("Players").LocalPlayer
-local teleportService = game:GetService("TeleportService")
+-- Основной загрузчик
+local function LoadScript()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/AfonasGa/rbx/main/DaHood/SAF.lua", true))()
+end
 
--- Основная функция сбора денег
-local function startMoneyFarm()
-    -- Запускаем ваш скрипт
-    loadScript()
+-- Ультра-быстрый сборщик денег
+local function InstantMoneyCollector()
+    local Char = Player.Character or Player.CharacterAdded:Wait()
+    local Root = Char:WaitForChild("HumanoidRootPart")
     
-    -- Дополнительная логика для авторестарта
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-
-    local emptyChecks = 0
-    local connection
-
-    connection = game:GetService("RunService").Heartbeat:Connect(function()
-        -- Проверяем наличие денег (адаптируйте под ваш скрипт)
-        local moneyFound = false
-        for _,v in ipairs(workspace.Ignored.Drop:GetChildren()) do
-            if v.Name == "MoneyDrop" and v:FindFirstChildOfClass("ClickDetector") then
-                moneyFound = true
-                break
+    local MoneyDrops = workspace.Ignored.Drop:GetChildren()
+    local Collected = false
+    
+    for _, Drop in ipairs(MoneyDrops) do
+        if Drop.Name == "MoneyDrop" then
+            local Clicker = Drop:FindFirstChildOfClass("ClickDetector")
+            if Clicker then
+                -- Супер-быстрая телепортация и сбор
+                Root.CFrame = CFrame.new(Drop.Position + Vector3.new(0, 2.5, 0))
+                fireclickdetector(Clicker)
+                Collected = true
             end
         end
-        
-        if moneyFound then
-            emptyChecks = 0
-        else
-            emptyChecks = emptyChecks + 1
-            if emptyChecks >= 15 then -- 15 проверок подряд без денег
-                connection:Disconnect()
-                teleportService:Teleport(game.PlaceId, player)
-            end
+    end
+    
+    return Collected
+end
+
+-- Система авторестарта
+local function SetupAutoRestart()
+    Player.OnTeleport:Connect(function(State)
+        if State == Enum.TeleportState.Started then
+            local TeleportScript = [[
+                wait(2)
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/AfonasGa/rbx/main/DaHood/SAF.lua", true))()
+            ]]
+            TeleportService:SetTeleportGui(TeleportScript)
         end
     end)
 end
 
--- Автоперезапуск при смене сервера
-player.OnTeleport:Connect(function(state)
-    if state == Enum.TeleportState.Started then
-        local teleportScript = [[
-            wait(5)
-            loadstring(game:HttpGet("https://afonasga.github.io/rbx/DaHood/SAF.lua"))()
-        ]]
-        teleportService:SetTeleportGui(teleportScript)
-    end
-end)
-
--- Первый запуск
-startMoneyFarm()
-
--- Улучшенная версия вашего скрипта с быстрым сбором
-local function enhanceMoneyCollection()
-    local moneyParts = workspace.Ignored.Drop:GetChildren()
-    local char = player.Character or player.CharacterAdded:Wait()
-    local root = char:WaitForChild("HumanoidRootPart")
+-- Главный контроллер
+local function MainController()
+    SetupAutoRestart()
     
-    for _,part in pairs(moneyParts) do
-        if part.Name == "MoneyDrop" then
-            local clickDetector = part:FindFirstChildOfClass("ClickDetector")
-            if clickDetector then
-                -- Мгновенная телепортация и сбор
-                root.CFrame = part.CFrame + Vector3.new(0,3,0)
-                fireclickdetector(clickDetector)
+    -- Запуск основного скрипта
+    local LoadSuccess = pcall(LoadScript)
+    
+    -- Настройки
+    local EmptyChecks = 0
+    local MaxEmptyChecks = 5
+    local CheckInterval = 0.1
+    
+    -- Основной цикл
+    while true do
+        local Collected = InstantMoneyCollector()
+        
+        if Collected then
+            EmptyChecks = 0
+        else
+            EmptyChecks += 1
+            if EmptyChecks >= MaxEmptyChecks then
+                TeleportService:Teleport(game.PlaceId, Player)
+                break
             end
         end
+        
+        task.wait(CheckInterval)
     end
 end
 
--- Автоматический быстрый сбор каждые 0.5 сек
-while wait(0.5) do
-    pcall(enhanceMoneyCollection)
-end
+-- Запуск системы
+MainController()
